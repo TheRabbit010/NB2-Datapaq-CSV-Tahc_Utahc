@@ -612,12 +612,15 @@ if uploaded_file:
 
         summary_rows = []
         for p_num, col_name in ordered_cols:
+            # เปลี่ยนชื่อตำแหน่ง (Location) ใหม่ตามที่กำหนด
             if p_num in [1, 2]:
-                location = "Core Right"
-            elif p_num in [3, 4, 5]:
-                location = "Core Middle"
+                location = "L"
+            elif p_num in [3, 4]:
+                location = "ML"
+            elif p_num in [5, 6]:
+                location = "MR"
             else:
-                location = "Core Left"
+                location = "R"
 
             short_pb_name = f"PB#{p_num}"
             
@@ -625,11 +628,11 @@ if uploaded_file:
             br_max = f"{brazing_max_subset[col_name].max():.1f}" if not brazing_max_subset.empty else "0.0"
             d_max = f"{dryer_subset[col_name].max():.1f}" if not dryer_subset.empty else "0.0"
             
-            # Dwell Time
+            # Dwell Time (ปรับเหลือ 591, 577, 250, 200, 150)
             br_dwell_591 = (brazing_ht_subset[col_name] >= 591.0).sum() if not brazing_ht_subset.empty else 0
             br_dwell_577 = (brazing_ht_subset[col_name] >= 577.0).sum() if not brazing_ht_subset.empty else 0
-            br_dwell_550 = (brazing_ht_subset[col_name] >= 550.0).sum() if not brazing_ht_subset.empty else 0
             
+            d_dwell_250 = (dryer_subset[col_name] >= 250.0).sum() if not dryer_subset.empty else 0
             d_dwell_200 = (dryer_subset[col_name] >= 200.0).sum() if not dryer_subset.empty else 0
             d_dwell_150 = (dryer_subset[col_name] >= 150.0).sum() if not dryer_subset.empty else 0
 
@@ -640,7 +643,7 @@ if uploaded_file:
                 d_max,
                 format_seconds_to_time(br_dwell_591),
                 format_seconds_to_time(br_dwell_577),
-                format_seconds_to_time(br_dwell_550),
+                format_seconds_to_time(d_dwell_250),
                 format_seconds_to_time(d_dwell_200),
                 format_seconds_to_time(d_dwell_150)
             ])
@@ -652,7 +655,7 @@ if uploaded_file:
             ("Max Temp (°C)", "Dryer"),
             ("Brazing Zone", "Dwell Time Above 591°C"),
             ("Brazing Zone", "Dwell Time Above 577°C"),
-            ("Brazing Zone", "Dwell Time Above 550°C"),
+            ("Dryer Zone", "Dwell Time Above 250°C"),
             ("Dryer Zone", "Dwell Time Above 200°C"),
             ("Dryer Zone", "Dwell Time Above 150°C")
         ])
@@ -665,9 +668,9 @@ if uploaded_file:
         st.markdown("""
             <div style="background-color: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 12px 18px; font-size: 13px; color: #CCCCCC; margin-top: 10px;">
                 <b style="color: #F0B90B;">📌 เกณฑ์มาตรฐานอ้างอิง (Process Standards):</b><br>
-                • <b>Maximum Temperatures (°C):</b> Brazing Zone: <b>598 - 606 °C for EVO</b> | <b>595 - 606 °C for M2</b> | Dryer Zone: <b>200 - 375 °C</b><br>
-                • <b>Brazing Dwell Time:</b> Above 591°C: <b>1:30 - 4:00 min (90s - 240s)</b> | Above 577°C: <b>4:30 - 7:00 min (270s - 420s)</b> | Above 550°C: <b>7:00 - 10:30 min (420s - 630s)</b><br>
-                • <b>Dryer Dwell Time:</b> Above 200°C: <b>> 1:30 min (>90s)</b> | Above 150°C: <b>> 1:45 min (>105s)</b>
+                • <b>Maximum Temperatures (°C):</b> Brazing Zone: <b>596 - 604 °C</b> | Dryer Zone: <b>200 - 375 °C</b><br>
+                • <b>Brazing Dwell Time:</b> Above 591°C: <b>1:30 - 4:30 min (90s - 270s)</b> | Above 577°C: <b>4:00 - 7:00 min (240s - 420s) หรือ 3:30 - 5:30 min (210s - 330s)</b><br>
+                • <b>Dryer Dwell Time:</b> Above 250°C: <b>> 1:00 min (>60s)</b> | Above 200°C: <b>> 1:15 min (>75s)</b> | Above 150°C: <b>> 1:45 min (>105s)</b>
             </div>
         """, unsafe_allow_html=True)
 
