@@ -1,5 +1,4 @@
 import io
-import re
 import openpyxl
 import pandas as pd
 import numpy as np
@@ -9,7 +8,7 @@ import streamlit as st
 
 # 1. ตั้งค่า Page Config
 st.set_page_config(
-    page_title="Datapaq NB3 KE8",
+    page_title="Datapaq NB2 Tahc & Utahc",
     page_icon="🏭",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -187,7 +186,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 3. แสดงชื่อโปรแกรมหลัก
-st.title("🏭 Datapaq NB3 KE8")
+st.title("🏭 Datapaq NB2 Tahc & Utahc")
 
 # 4. ฟังก์ชันแปลงวินาทีเป็นรูปแบบ mm:ss หรือ hh:mm:ss
 def format_seconds_to_time(total_seconds):
@@ -383,37 +382,35 @@ if uploaded_file:
 
         if color_shading_mode == "แสดงสีตามโซน (By Zone)":
             zones_data = [
-                {"Start Time": "00:00:00", "End Time": "00:00:04", "Zone Name": "XFER", "Color": "#F7DC6F"},
-                {"Start Time": "00:00:05", "End Time": "00:01:31", "Zone Name": "Dryer Z#1", "Color": "#F7DC6F"},
-                {"Start Time": "00:01:32", "End Time": "00:02:59", "Zone Name": "Dryer Z#2", "Color": "#F39C12"},
-                {"Start Time": "00:03:00", "End Time": "00:04:31", "Zone Name": "Dryer Z#3", "Color": "#F39C12"},
-                {"Start Time": "00:04:32", "End Time": "00:07:11", "Zone Name": "XFER#1", "Color": "#E67E22"},
-                {"Start Time": "00:07:12", "End Time": "00:10:01", "Zone Name": "Z#1", "Color": "#FF0033"},       
-                {"Start Time": "00:10:02", "End Time": "00:12:11", "Zone Name": "Z#2", "Color": "#E6002E"},       
-                {"Start Time": "00:12:12", "End Time": "00:13:59", "Zone Name": "Z#3", "Color": "#CC0029"},       
-                {"Start Time": "00:14:00", "End Time": "00:15:39", "Zone Name": "Z#4", "Color": "#B30024"},       
-                {"Start Time": "00:15:40", "End Time": "00:17:18", "Zone Name": "Z#5", "Color": "#CC0029"},       
-                {"Start Time": "00:17:19", "End Time": "00:18:48", "Zone Name": "Z#6", "Color": "#E6002E"},       
-                {"Start Time": "00:18:49", "End Time": "00:20:05", "Zone Name": "Z#7", "Color": "#FF0033"},       
-                {"Start Time": "00:20:06", "End Time": "00:22:06", "Zone Name": "WatCool#1", "Color": "#00B4D8"},
-                {"Start Time": "00:22:07", "End Time": "00:23:35", "Zone Name": "WatCool#2", "Color": "#0096C7"},
-                {"Start Time": "00:23:36", "End Time": "00:25:05", "Zone Name": "Exit curtain box", "Color": "#0077B6"},
-                {"Start Time": "00:25:06", "End Time": "00:25:33", "Zone Name": "XFER#2", "Color": "#023E8A"},
-                {"Start Time": "00:25:34", "End Time": "00:26:33", "Zone Name": "AirCool#1", "Color": "#48CAE4"},
-                {"Start Time": "00:26:34", "End Time": "00:27:32", "Zone Name": "AirCool#2", "Color": "#90E0EF"},
-                {"Start Time": "00:27:33", "End Time": "00:28:59", "Zone Name": "Exit", "Color": "#CAF0F8"}
+                {"Start Time": "00:00:00", "End Time": "00:01:47", "Zone Name": "Dryer Z#1", "Color": "#F7DC6F"},
+                {"Start Time": "00:01:48", "End Time": "00:03:34", "Zone Name": "Dryer Z#2", "Color": "#F39C12"},
+                {"Start Time": "00:03:35", "End Time": "00:05:35", "Zone Name": "Xfer#1", "Color": "#E67E22"},
+                {"Start Time": "00:05:36", "End Time": "00:07:53", "Zone Name": "Z#1", "Color": "#FF0033"},       
+                {"Start Time": "00:07:54", "End Time": "00:09:37", "Zone Name": "Z#2", "Color": "#E6002E"},       
+                {"Start Time": "00:09:38", "End Time": "00:11:09", "Zone Name": "Z#3", "Color": "#CC0029"},       
+                {"Start Time": "00:11:10", "End Time": "00:12:30", "Zone Name": "Z#4", "Color": "#B30024"},       
+                {"Start Time": "00:12:31", "End Time": "00:13:59", "Zone Name": "Z#5", "Color": "#CC0029"},       
+                {"Start Time": "00:14:00", "End Time": "00:15:12", "Zone Name": "Z#6", "Color": "#E6002E"},       
+                {"Start Time": "00:15:13", "End Time": "00:16:36", "Zone Name": "Z#7", "Color": "#FF0033"},       
+                {"Start Time": "00:16:37", "End Time": "00:17:07", "Zone Name": "Xfer2", "Color": "#00B4D8"},
+                {"Start Time": "00:17:08", "End Time": "00:18:14", "Zone Name": "WatCol1", "Color": "#0096C7"},
+                {"Start Time": "00:18:15", "End Time": "00:19:26", "Zone Name": "WatCol2", "Color": "#00B4D8"},
+                {"Start Time": "00:19:27", "End Time": "00:20:54", "Zone Name": "Exit curtain box", "Color": "#0077B6"},
+                {"Start Time": "00:20:55", "End Time": "00:21:42", "Zone Name": "Airc1", "Color": "#48CAE4"},
+                {"Start Time": "00:21:43", "End Time": "00:22:30", "Zone Name": "Airc2", "Color": "#90E0EF"},
+                {"Start Time": "00:22:31", "End Time": "00:22:45", "Zone Name": "Exit", "Color": "#CAF0F8"}
             ]
             angle_setting = -90
         else:
             zones_data = [
-                {"Start Time": "00:00:00", "End Time": "00:05:00", "Zone Name": "Dryer", "Color": "#F39C12"},      
-                {"Start Time": "00:05:01", "End Time": "00:20:05", "Zone Name": "Brazing", "Color": "#FF0033"},    
-                {"Start Time": "00:20:06", "End Time": "00:27:32", "Zone Name": "Cool", "Color": "#00B4D8"},       
-                {"Start Time": "00:27:33", "End Time": "00:28:00", "Zone Name": "Exit", "Color": "#90E0EF"}        
+                {"Start Time": "00:00:00", "End Time": "00:04:00", "Zone Name": "Dryer", "Color": "#F39C12"},      
+                {"Start Time": "00:05:01", "End Time": "00:17:07", "Zone Name": "Brazing", "Color": "#FF0033"},    
+                {"Start Time": "00:17:08", "End Time": "00:22:30", "Zone Name": "Cool", "Color": "#00B4D8"},       
+                {"Start Time": "00:22:31", "End Time": "00:25:00", "Zone Name": "Exit", "Color": "#90E0EF"}
             ]
             angle_setting = 0
 
-        # ตัดข้อมูลกราฟหลังช่วง Exit ออก
+        # ตัดข้อมูลกราฟหลังช่วง Exit ออกเพื่อความสวยงาม
         exit_end_seconds = time_str_to_seconds(zones_data[-1]["End Time"])
         df_chart = df[df["ElapsedSeconds"] <= exit_end_seconds].copy()
         if df_chart.empty:
@@ -596,12 +593,14 @@ if uploaded_file:
         # ---------------------------------------------------------
         st.markdown("### 📊 ตารางสรุปผลการวิเคราะห์ (Data Table for Google Sheets Copy)")
 
-        # 📌 จำกัดขอบเขตเวลาของ Dryer ที่ 300 วินาทีตามสเปกมาตรฐาน
-        dryer_max_sec = 300 
+        # อ้างอิงตามระยะโซนใหม่ล่าสุดที่ตั้งไว้ (Dryer สิ้นสุดที่ 00:04:00 หรือ 240 วินาที)
+        dryer_max_sec = 240
         
         dryer_subset = df[(df["ElapsedSeconds"] >= 0) & (df["ElapsedSeconds"] <= dryer_max_sec)]
         brazing_ht_subset = df[(df["ElapsedSeconds"] >= 0)]
-        brazing_max_subset = df[(df["ElapsedSeconds"] >= 900) & (df["ElapsedSeconds"] <= 1750)]
+        
+        # ขอบเขตหาช่วง Max Temp ของ Brazing อ้างอิงตามช่วง Brazing Zone ใหม่ล่าสุด (301 วินาที ถึง 1200 วินาทีเผื่อยอดพีค)
+        brazing_max_subset = df[(df["ElapsedSeconds"] >= 300) & (df["ElapsedSeconds"] <= 1200)]
 
         probe_order = [1, 2, 3, 4, 5, 6, 7, 8]
         ordered_cols = []
@@ -683,7 +682,7 @@ if uploaded_file:
             with col_opt1:
                 custom_filename = st.text_input(
                     "ตั้งชื่อไฟล์ดาวน์โหลด:", 
-                    value="datapaq_nb3_ke8_8probes_data.xlsx"
+                    value="datapaq_nb2_tahc_utahc_data.xlsx"
                 )
                 if not custom_filename.endswith('.xlsx'):
                     custom_filename += '.xlsx'
