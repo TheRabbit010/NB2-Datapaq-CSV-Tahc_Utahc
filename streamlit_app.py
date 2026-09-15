@@ -593,8 +593,8 @@ if uploaded_file:
         # ---------------------------------------------------------
         st.markdown("### 📊 ตารางสรุปผลการวิเคราะห์ (Data Table for Google Sheets Copy)")
 
-        # อ้างอิงตามระยะโซนใหม่ล่าสุดที่ตั้งไว้ (Dryer สิ้นสุดที่ 00:04:00 หรือ 240 วินาที)
-        dryer_max_sec = 240
+        # อ้างอิงตามระยะโซนใหม่ล่าสุดที่ตั้งไว้ (ครอบคลุมความร้อนช่วง Dryer ลากยาวจนสุด Xfer#1 ก่อนเข้า Z#1)
+        dryer_max_sec = 335
         
         dryer_subset = df[(df["ElapsedSeconds"] >= 0) & (df["ElapsedSeconds"] <= dryer_max_sec)]
         brazing_ht_subset = df[(df["ElapsedSeconds"] >= 0)]
@@ -628,13 +628,12 @@ if uploaded_file:
             br_max = f"{brazing_max_subset[col_name].max():.1f}" if not brazing_max_subset.empty else "0.0"
             d_max = f"{dryer_subset[col_name].max():.1f}" if not dryer_subset.empty else "0.0"
             
-            # Dwell Time (ปรับเหลือ 591, 577, 250, 200, 150)
+            # Dwell Time
             br_dwell_591 = (brazing_ht_subset[col_name] >= 591.0).sum() if not brazing_ht_subset.empty else 0
             br_dwell_577 = (brazing_ht_subset[col_name] >= 577.0).sum() if not brazing_ht_subset.empty else 0
             
             d_dwell_250 = (dryer_subset[col_name] >= 250.0).sum() if not dryer_subset.empty else 0
             d_dwell_200 = (dryer_subset[col_name] >= 200.0).sum() if not dryer_subset.empty else 0
-            d_dwell_150 = (dryer_subset[col_name] >= 150.0).sum() if not dryer_subset.empty else 0
 
             summary_rows.append([
                 location,
@@ -644,8 +643,7 @@ if uploaded_file:
                 format_seconds_to_time(br_dwell_591),
                 format_seconds_to_time(br_dwell_577),
                 format_seconds_to_time(d_dwell_250),
-                format_seconds_to_time(d_dwell_200),
-                format_seconds_to_time(d_dwell_150)
+                format_seconds_to_time(d_dwell_200)
             ])
 
         multi_cols = pd.MultiIndex.from_tuples([
@@ -656,8 +654,7 @@ if uploaded_file:
             ("Brazing Zone", "Dwell Time Above 591°C"),
             ("Brazing Zone", "Dwell Time Above 577°C"),
             ("Dryer Zone", "Dwell Time Above 250°C"),
-            ("Dryer Zone", "Dwell Time Above 200°C"),
-            ("Dryer Zone", "Dwell Time Above 150°C")
+            ("Dryer Zone", "Dwell Time Above 200°C")
         ])
 
         display_summary_df = pd.DataFrame(summary_rows, columns=multi_cols)
@@ -670,7 +667,7 @@ if uploaded_file:
                 <b style="color: #F0B90B;">📌 เกณฑ์มาตรฐานอ้างอิง (Process Standards):</b><br>
                 • <b>Maximum Temperatures (°C):</b> Brazing Zone: <b>596 - 604 °C</b> | Dryer Zone: <b>200 - 375 °C</b><br>
                 • <b>Brazing Dwell Time:</b> Above 591°C: <b>1:30 - 4:30 min (90s - 270s)</b> | Above 577°C: <b>4:00 - 7:00 min (240s - 420s) หรือ 3:30 - 5:30 min (210s - 330s)</b><br>
-                • <b>Dryer Dwell Time:</b> Above 250°C: <b>> 1:00 min (>60s)</b> | Above 200°C: <b>> 1:15 min (>75s)</b> | Above 150°C: <b>> 1:45 min (>105s)</b>
+                • <b>Dryer Dwell Time:</b> Above 250°C: <b>> 1:00 min (>60s)</b> | Above 200°C: <b>> 1:15 min (>75s)</b>
             </div>
         """, unsafe_allow_html=True)
 
