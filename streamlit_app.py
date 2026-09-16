@@ -217,7 +217,7 @@ def hex_to_rgba(hex_str, opacity=0.25):
     b = int(hex_str[4:6], 16)
     return f"rgba({r}, {g}, {b}, {opacity})"
 
-# 5. ฟังก์ชันอ่านไฟล์ CSV แบบตัดเวลาติดลบ (ข้อมูลก่อนเข้าเตา)
+# 5. ฟังก์ชันอ่านไฟล์ CSV แบบรองรับสถานะ *OC* (Open Circuit) และตัดเวลาติดลบ
 def parse_single_file(uploaded_file):
     uploaded_file.seek(0)
     raw_bytes = uploaded_file.read()
@@ -278,11 +278,11 @@ def parse_single_file(uploaded_file):
                     probe_labels[ch_num] = val
         else:
             parts = [p.strip() for p in line_str.split(",") if p.strip() != ""]
-            if len(parts) >= 10:
+            if len(parts) >= 3:
                 try:
                     time_str = parts[0].strip()
                     
-                    # ตัดแถวที่มีเวลาติดลบทิ้ง ป้องกันกราฟแบนราบ
+                    # ตัดแถวที่มีเวลาติดลบทิ้ง
                     if time_str.startswith("-"):
                         continue
                         
@@ -292,8 +292,22 @@ def parse_single_file(uploaded_file):
                     else:
                         elapsed_sec = len(data_rows)
                     
-                    dist_val = float(parts[1])
-                    probe_vals = [float(p) for p in parts[2:10]]
+                    try:
+                        dist_val = float(parts[1])
+                    except ValueError:
+                        dist_val = 0.0
+                        
+                    # รองรับค่า *OC* หรือตัวอักษรขยะ โดยเปลี่ยนเป็น np.nan
+                    probe_vals = []
+                    for p in parts[2:10]:
+                        try:
+                            probe_vals.append(float(p))
+                        except ValueError:
+                            probe_vals.append(np.nan)
+                    
+                    # เติม np.nan ให้ครบ 8 Probe หากแชนแนลเปิดไม่ครบ
+                    while len(probe_vals) < 8:
+                        probe_vals.append(np.nan)
                     
                     data_rows.append({
                         "elapsed_sec": elapsed_sec,
@@ -301,7 +315,7 @@ def parse_single_file(uploaded_file):
                         "dist_val": dist_val,
                         "probes": probe_vals
                     })
-                except (ValueError, IndexError):
+                except Exception:
                     continue
 
     if not data_rows:
@@ -596,40 +610,31 @@ if uploaded_file:
 
         st.plotly_chart(fig, use_container_width=True)
 
-        # ---------------------------------------------------------
         # 📝 กล่องแสดงข้อความ #note #1 ด้านล่างรูปภาพกราฟ
-        # ---------------------------------------------------------
         st.markdown(f"""
             <div class="raw-header-box" style="margin-top: -10px; margin-bottom: 25px;">
                 <div><span class="raw-header-key">#note #1</span> = <span class="raw-header-val">{metadata.get('note_1', '-')}</span></div>
             </div>
         """, unsafe_allow_html=True)
 
-        # ---------------------------------------------------------
         # 📊 ตารางสรุปค่า
-        # ---------------------------------------------------------
         st.markdown("### 📊 ตารางสรุปผลการวิเคราะห์ (Data Table for Google Sheets Copy)")
 
-        # อ้างอิงตามระยะโซนใหม่ล่าสุดที่ตั้งไว้ (ครอบคลุมความร้อนช่วง Dryer ลากยาวจนสุด Xfer#1 ก่อนเข้า Z#1)
         dryer_max_sec = 335
-        
         dryer_subset = df[(df["ElapsedSeconds"] >= 0) & (df["ElapsedSeconds"] <= dryer_max_sec)]
         brazing_ht_subset = df[(df["ElapsedSeconds"] >= 0)]
-        
-        # ขอบเขตหาช่วง Max Temp ของ Brazing อ้างอิงตามช่วง Brazing Zone ใหม่ล่าสุด (301 วินาที ถึง 1200 วินาทีเผื่อยอดพีค)
         brazing_max_subset = df[(df["ElapsedSeconds"] >= 300) & (df["ElapsedSeconds"] <= 1200)]
 
         probe_order = [1, 2, 3, 4, 5, 6, 7, 8]
         ordered_cols = []
         for p_num in probe_order:
             for c in probe_cols[:8]:
-                if f"Probe #{p_num}" in c:
+                if f"Probe #{p_num}" in c or f"Probe #{p_num}:" in c:
                     ordered_cols.append((p_num, c))
                     break
 
         summary_rows = []
         for p_num, col_name in ordered_cols:
-            # เปลี่ยนชื่อตำแหน่ง (Location) ใหม่ตามที่กำหนด
             if p_num in [1, 2]:
                 location = "L"
             elif p_num in [3, 4]:
@@ -641,9 +646,12 @@ if uploaded_file:
 
             short_pb_name = f"PB#{p_num}"
             
-            # Max Temp
-            br_max = f"{brazing_max_subset[col_name].max():.1f}" if not brazing_max_subset.empty else "0.0"
-            d_max = f"{dryer_subset[col_name].max():.1f}" if not dryer_subset.empty else "0.0"
+            # Max Temp (ตรวจสอบกรณีเป็น NaN)
+            br_val = brazing_max_subset[col_name].max() if not brazing_max_subset.empty else np.nan
+            br_max = f"{br_val:.1f}" if pd.notna(br_val) else "-"
+            
+            d_val = dryer_subset[col_name].max() if not dryer_subset.empty else np.nan
+            d_max = f"{d_val:.1f}" if pd.notna(d_val) else "-"
             
             # Dwell Time
             br_dwell_591 = (brazing_ht_subset[col_name] >= 591.0).sum() if not brazing_ht_subset.empty else 0
