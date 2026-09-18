@@ -242,6 +242,7 @@ def parse_single_file(uploaded_file):
         "paqfile start date": "-",
         "paqfile start time": "-",
         "title": "-",
+        "logger": "-",
         "operator": "-",
         "product": "Heater Core",
         "site": "VSTS / Power Chonburi",
@@ -265,6 +266,8 @@ def parse_single_file(uploaded_file):
                     metadata["paqfile start date"] = val
                 elif key.lower() == "paqfile start time":
                     metadata["paqfile start time"] = val
+                elif "logger" in key.lower():
+                    metadata["logger"] = val
                 elif key.lower() == "operator":
                     metadata["operator"] = val
                 elif key.lower() == "product":
@@ -450,6 +453,7 @@ if uploaded_file:
         with col_h2:
             st.markdown(f"""
                 <div class="raw-header-box">
+                    <div><span class="raw-header-key">#logger s/n</span> = <span class="raw-header-val">{metadata.get('logger', '-')}</span></div>
                     <div><span class="raw-header-key">#operator</span> = <span class="raw-header-val">{metadata.get('operator', '-')}</span></div>
                     <div><span class="raw-header-key">#product</span> = <span class="raw-header-val">{metadata.get('product', 'Heater Core')}</span></div>
                     <div><span class="raw-header-key">#site</span> = <span class="raw-header-val">{metadata.get('site', 'VSTS / Power Chonburi')}</span></div>
@@ -689,7 +693,7 @@ if uploaded_file:
         # คำอธิบายเกณฑ์มาตรฐาน (Process Standards Legend)
         st.markdown("""
             <div style="background-color: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 12px 18px; font-size: 13px; color: #CCCCCC; margin-top: 10px;">
-                <b style="color: #F0B90B;">📌 เกณฑ์มาตรฐานอ้างอิง (Process Standards):</b><br>
+                <b style="color: #F0B90B;">📌 เกณฑ์มาตรฐานอ้างอิง (Process Standards : PRCNVR 02050 Rev B):</b><br>
                 • <b>Maximum Temperatures (°C):</b> Brazing Zone: <b>596 - 604 °C</b> | Dryer Zone: <b>200 - 375 °C</b><br>
                 • <b>Brazing Dwell Time:</b> Above 591°C: <b>1:30 - 4:30 min (90s - 270s)</b> | Above 577°C: <b>4:00 - 7:00 min (240s - 420s) หรือ 3:30 - 5:30 min (210s - 330s)</b><br>
                 • <b>Dryer Dwell Time:</b> Above 250°C: <b>> 1:00 min (>60s)</b> | Above 200°C: <b>> 1:15 min (>75s)</b>
