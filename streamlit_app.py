@@ -707,7 +707,7 @@ if uploaded_file:
             zones_data = [
                 {
                     "Start Time": "00:00:00",
-                    "End Time": "00:05:00",
+                    "End Time": "00:04:00",
                     "Zone Name": "Dryer",
                     "Color": "#F39C12",
                 },
@@ -731,17 +731,6 @@ if uploaded_file:
                 },
             ]
             angle_setting = 0
-
-        # ฟังก์ชันแปลงเวลาเป็นวินาที
-        def time_str_to_seconds(t_str):
-            if not t_str or not isinstance(t_str, str):
-                return 0
-            parts = t_str.split(":")
-            if len(parts) == 3:
-                return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
-            elif len(parts) == 2:
-                return int(parts[0]) * 60 + int(parts[1])
-            return 0
 
         max_view_sec = 1739
         df_chart = df[df["ElapsedSeconds"] <= max_view_sec].copy()
@@ -979,7 +968,8 @@ if uploaded_file:
             "### 📊 ตารางสรุปผลการวิเคราะห์ (Data Table for Google Sheets Copy)"
         )
 
-        dryer_max_sec = 335
+        # ตั้งค่าช่วงเวลาโซน Dryer เป็น 0:00:00 ถึง 0:04:00 (240 วินาที)
+        dryer_max_sec = 240
         dryer_subset = df[
             (df["ElapsedSeconds"] >= 0) & (df["ElapsedSeconds"] <= dryer_max_sec)
         ]
