@@ -182,20 +182,17 @@ st.markdown(
 st.title("🏭 Datapaq NB2 Tahc & Utahc")
 
 
-# 4. ฟังก์ชันแปลงวินาทีเป็นรูปแบบ mm:ss หรือ hh:mm:ss
+# 4. ฟังก์ชันแปลงวินาทีเป็นรูปแบบ HH:MM:SS
 def format_seconds_to_time(total_seconds):
     if pd.isna(total_seconds) or total_seconds <= 0:
-        return "00:00"
+        return "00:00:00"
 
-    total_sec = int(round(total_seconds))
+    total_sec = int(round(total_seconds + 1e-5))
     hours = total_sec // 3600
     minutes = (total_sec % 3600) // 60
     seconds = total_sec % 60
 
-    if hours == 0:
-        return f"{minutes:02d}:{seconds:02d}"
-    else:
-        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
 
 # ฟังก์ชันแปลงรูปแบบเวลาเป็นวินาที
@@ -746,8 +743,8 @@ if uploaded_file:
                 return int(parts[0]) * 60 + int(parts[1])
             return 0
 
-        exit_end_seconds = time_str_to_seconds(zones_data[-1]["End Time"])
-        df_chart = df[df["ElapsedSeconds"] <= exit_end_seconds].copy()
+        max_view_sec = 1739
+        df_chart = df[df["ElapsedSeconds"] <= max_view_sec].copy()
         if df_chart.empty:
             df_chart = df.copy()
 
@@ -1002,8 +999,6 @@ if uploaded_file:
                 pass
 
         found_p_nums = sorted(probe_map.keys())
-
-        # หากมีโพรบ 1..8 ครบถ้วน จัดลำดับตามมาตรฐาน [1, 2, 3, 4, 5, 6, 7, 8] หากมากกว่านั้นเรียงตามลำดับหมายเลข
         ordered_p_nums = found_p_nums
         ordered_cols = [
             (p_num, probe_map[p_num])
@@ -1016,36 +1011,9 @@ if uploaded_file:
             label_part = (
                 col_name.split(":", 1)[1].strip() if ":" in col_name else ""
             )
-            lbl_upper = label_part.upper()
 
             # ตรวจสอบตำแหน่ง Probe อัตโนมัติจากแท็กชื่อโพรบ
-            if "MIDDLE RIGHT" in lbl_upper or "MR" in lbl_upper:
-                location = "MR"
-            elif "MIDDLE LEFT" in lbl_upper or "ML" in lbl_upper:
-                location = "ML"
-            elif "RIGHT" in lbl_upper or "CORE RIGHT" in lbl_upper:
-                location = "Right"
-            elif "LEFT" in lbl_upper or "CORE LEFT" in lbl_upper:
-                location = "Left"
-            elif "MIDDLE" in lbl_upper or "CENTER" in lbl_upper:
-                location = "Middle"
-            elif "FRONT" in lbl_upper:
-                location = "Front"
-            elif "REAR" in lbl_upper:
-                location = "Rear"
-            elif "BOTTOM" in lbl_upper:
-                location = "Bottom"
-            elif "TOP" in lbl_upper:
-                location = "Top"
-            else:
-                if p_num in [1, 2]:
-                    location = "Left"
-                elif p_num in [3, 4]:
-                    location = "ML"
-                elif p_num in [5, 6]:
-                    location = "MR"
-                else:
-                    location = "Right"
+            location = get_probe_location(p_num, label_part=label_part)
 
             short_pb_name = f"PB#{p_num}"
             probe_series = df[col_name]
@@ -1219,7 +1187,7 @@ if uploaded_file:
         st.markdown(
             """
             <div style="background-color: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 14px 18px; font-size: 13px; color: #CCCCCC; margin-top: 10px; line-height: 1.6;">
-                <b style="color: #F0B90B;">📌 เกณฑ์มาตรฐานอ้างอิง (Process Standards : PRCNVR 02050 Rev B):</b><br>
+                <b style="color: #F0B90B; font-size: 14px;">📌 เกณฑ์มาตรฐานอ้างอิงภายใน VSTS (Process Standards : PRCNVR 02050 Rev B):</b><br><br>
                 • <b>Maximum Temperatures (°C):</b> Brazing Zone: <b>596 - 604 °C</b> | Dryer Zone: <b>200 - 375 °C</b><br>
                 • <b>Brazing Dwell Time:</b> Above 591°C: <b>1:30 - 4:30 min (90s - 270s)</b> | Above 577°C: <b>4:00 - 7:00 min (240s - 420s) หรือ 3:30 - 5:30 min (210s - 330s)</b><br>
                 • <b>Dryer Dwell Time:</b> Above 250°C: <b>> 1:00 min (>60s)</b> | Above 200°C: <b>> 1:15 min (>75s)</b>
