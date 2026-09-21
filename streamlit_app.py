@@ -707,7 +707,7 @@ if uploaded_file:
             zones_data = [
                 {
                     "Start Time": "00:00:00",
-                    "End Time": "00:04:00",
+                    "End Time": "00:05:00",
                     "Zone Name": "Dryer",
                     "Color": "#F39C12",
                 },
